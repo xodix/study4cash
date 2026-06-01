@@ -3,41 +3,43 @@ package main
 //go:generate buf generate
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	"study4cash/routes"
 
-	"study4cash/impl"
-
-	"connectrpc.com/grpcreflect"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
+
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
 
 func main() {
 	godotenv.Load(".env")
 	db := configDB()
+	fmt.Printf("db.Name(): %v\n", db.Name())
 
-	mux := http.NewServeMux()
-	// users
-	usersPath, usersHandler := impl.NewUsersServer(db)
-	log.Println(usersPath)
-	mux.Handle(usersPath, usersHandler)
+	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
+	e.Use(middleware.RequestLogger())
+	// ROUTES
+	routes.RouteUsers("/user/", e, db)
 
-	// Reflectors
-	reflector := grpcreflect.NewStaticReflector(
-		strings.ReplaceAll(usersPath, "/", ""),
-	)
-	mux.Handle(grpcreflect.NewHandlerV1(reflector))
-	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+	e.GET("/", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
 
-	p := new(http.Protocols)
-	p.SetHTTP1(true)
-	p.SetUnencryptedHTTP2(true)
-	s := http.Server{
-		Addr:      "localhost:8080",
-		Handler:   mux,
-		Protocols: p,
+	if err := e.Start(":8080"); err != nil {
+		e.Logger.Error("failed to start server", "error", err)
 	}
+
 	log.Println("Server is running on port :8080 with HTTP and gRPC support")
-	s.ListenAndServe()
 }
