@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -36,10 +37,10 @@ func GenerateJWT(userId uint) (*string, error) {
 func ValidateJWT(token string) (*JWTPayload, error) {
 	TOKEN_SECRET := os.Getenv("TOKEN_SECRET")
 	claims := &JWTPayload{}
-	token0, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(TOKEN_SECRET), nil
 	})
-	if err != nil || !token0.Valid {
+	if err != nil {
 		return nil, err
 	}
 
@@ -49,9 +50,11 @@ func ValidateJWT(token string) (*JWTPayload, error) {
 func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		tokenStr := c.Request().Header.Get("Authorization")
-		if tokenStr == "" || !strings.HasPrefix(tokenStr, "Bearer ") {
+		log.Println(tokenStr)
+		if tokenStr == "Bearer " || tokenStr == "" || !strings.HasPrefix(tokenStr, "Bearer ") {
 			return c.JSON(http.StatusUnauthorized, "No token provided")
 		}
+		tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
 		claims, err := ValidateJWT(tokenStr)
 		if err != nil {
 			return c.JSON(http.StatusUnauthorized, err.Error())

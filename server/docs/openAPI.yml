@@ -20,12 +20,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RegisterRequest"
-            example:
-              email: john.doe@example.com
-              password: securePass1
-              name: John
-              surname: Doe
-              birthdate: "1990-06-15T00:00:00Z"
       responses:
         "200":
           description: User registered successfully
@@ -33,28 +27,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegisterResponse"
-              example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                user_id: 42
         "400":
           description: Validation error — malformed or missing fields
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
               examples:
                 invalid_email:
                   summary: Invalid email format
-                  value:
-                    error: "invalid email format"
-                Parsing error:
+                  value: "invalid email format"
+                parsing_error:
                   summary: Invalid date
-                  value:
-                    error: 'code=400, message=Bad Request, err=parsing time "190Z" as "2006-01-02T15:04:05Z07:00": cannot parse "190Z" as "2006"'
-                Validation error:
+                  value: 'code=400, message=Bad Request, err=parsing time "190Z" as "2006-01-02T15:04:05Z07:00": cannot parse "190Z" as "2006"'
+                validation_error:
                   summary: Name below minimum length
-                  value:
-                    error: "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag\nKey: 'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'required' tag\nKey: 'RegisterRequest.Name' Error:Field validation for 'Name' failed on the 'min' tag\nKey: 'RegisterRequest.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"
+                  value: "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag\nKey: 'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'required' tag\nKey: 'RegisterRequest.Name' Error:Field validation for 'Name' failed on the 'min' tag\nKey: 'RegisterRequest.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"
 
   /user/login:
     post:
@@ -67,10 +55,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RegisterRequest"
-            example:
-              email: john.doe@example.com
-              password: securePass1
+              $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
           description: User logged in successfully
@@ -78,26 +63,92 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginResponse"
-              example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                user_id: 42
         "400":
           description: Validation error — malformed or missing fields
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
               examples:
                 user_not_found:
                   summary: User does not exist
-                  value:
-                    error: "User not found"
-                Validation error:
+                  value: "User not found"
+                validation_error:
                   summary: Name below minimum length
-                  value:
-                    error: "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag\nKey: 'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'required' tag\nKey: 'RegisterRequest.Name' Error:Field validation for 'Name' failed on the 'min' tag\nKey: 'RegisterRequest.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"
+                  value: "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag\nKey: 'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'required' tag\nKey: 'RegisterRequest.Name' Error:Field validation for 'Name' failed on the 'min' tag\nKey: 'RegisterRequest.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"
+
+  /user:
+    get:
+      summary: Get the logged in user details
+      operationId: userDetails
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailsResponse"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+
+    delete:
+      summary: Delete the logged in user
+      operationId: deleteUser
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "User deleted successfully"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RegisterRequest:
       type: object
@@ -144,7 +195,7 @@ components:
         token:
           type: string
           description: Signed JWT for authenticating subsequent requests
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiZXhwIjoxNzgwNTE0MDQxLCJpYXQiOjE3ODA0Mjc2NDF9.yQ1rl4Mkxwvlf5x2yStqy-iVRtkj4NcTNEJ_brhxhRU
         user_id:
           type: integer
           format: uint
@@ -176,7 +227,7 @@ components:
         token:
           type: string
           description: Signed JWT for authenticating subsequent requests
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiZXhwIjoxNzgwNTE0MDQxLCJpYXQiOjE3ODA0Mjc2NDF9.yQ1rl4Mkxwvlf5x2yStqy-iVRtkj4NcTNEJ_brhxhRU
         user_id:
           type: integer
           format: uint

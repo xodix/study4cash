@@ -31,7 +31,7 @@ func main() {
 	e.Validator = &CustomValidator{validator: validator.New()}
 	e.Use(middleware.RequestLogger())
 	// ROUTES
-	routes.RouteUsers("/user/", e, db)
+	routes.RouteUsers("/user", e, db)
 
 	e.GET("/", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")

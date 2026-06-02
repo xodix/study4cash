@@ -19,7 +19,8 @@ func RouteUsers(prefix string, e *echo.Echo, db *gorm.DB) {
 
 	protected := userRouter.Group("")
 	protected.Use(auth.JWTMiddleware)
-	protected.GET("/details", func(c *echo.Context) error { return Details(c, db) })
+	protected.GET("/", func(c *echo.Context) error { return Details(c, db) })
+	protected.DELETE("/", func(c *echo.Context) error { return DeleteAccount(c, db) })
 }
 
 type RegisterRequest struct {
@@ -37,23 +38,23 @@ type RegisterResponse struct {
 func Register(c *echo.Context, db *gorm.DB) error {
 	registerData := new(RegisterRequest)
 	if err := c.Bind(registerData); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 	if err := c.Validate(registerData); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	users, err := gorm.G[models.User](db).Where("email = ?", registerData.Email).Find(c.Request().Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if len(users) > 0 {
-		return c.JSON(http.StatusBadRequest, "User already exists")
+		return c.String(http.StatusBadRequest, "User already exists")
 	}
 
 	password, err := argon2id.CreateHash(registerData.Password, argon2id.DefaultParams)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	userModel := models.User{
 		Email:       registerData.Email,
@@ -66,12 +67,12 @@ func Register(c *echo.Context, db *gorm.DB) error {
 	}
 	tx := db.Save(&userModel)
 	if tx.Error != nil {
-		return c.JSON(http.StatusInternalServerError, tx.Error.Error())
+		return c.String(http.StatusInternalServerError, tx.Error.Error())
 	}
 
 	token, err := auth.GenerateJWT(userModel.ID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, RegisterResponse{
@@ -90,28 +91,28 @@ type LoginResponse struct {
 }
 
 func Login(c *echo.Context, db *gorm.DB) error {
-	loginData := new(RegisterRequest)
+	loginData := new(LoginRequest)
 	if err := c.Bind(loginData); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 	if err := c.Validate(loginData); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 	users, err := gorm.G[models.User](db).Where("email = ?", loginData.Email).Find(c.Request().Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if len(users) == 0 {
-		return c.JSON(http.StatusBadRequest, "User not found")
+		return c.String(http.StatusBadRequest, "User not found")
 	}
 
 	user := users[0]
 	match, err := argon2id.ComparePasswordAndHash(loginData.Password, user.Password)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Could not verify password")
+		return c.String(http.StatusInternalServerError, "Could not verify password")
 	}
 	if !match {
-		return c.JSON(http.StatusUnauthorized, "Invalid password")
+		return c.String(http.StatusUnauthorized, "Invalid password")
 	}
 
 	token, err := auth.GenerateJWT(user.ID)
@@ -135,12 +136,13 @@ func Details(c *echo.Context, db *gorm.DB) error {
 
 	users, err := gorm.G[models.User](db).Where("id = ?", userID).Find(c.Request().Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if len(users) != 1 {
-		return c.JSON(http.StatusNotFound, "User not found")
+		return c.String(http.StatusNotFound, "User not found")
 	}
 	user := users[0]
+
 	return c.JSON(http.StatusOK, DetailsResponse{
 		ID:        user.ID,
 		Email:     user.Email,
@@ -148,4 +150,18 @@ func Details(c *echo.Context, db *gorm.DB) error {
 		Surname:   user.Surname,
 		Birthdate: user.Birthdate,
 	})
+}
+
+func DeleteAccount(c *echo.Context, db *gorm.DB) error {
+	userID := c.Get("userID").(uint)
+
+	tx := db.Delete(&models.User{}, userID)
+	if tx.Error != nil {
+		return c.String(http.StatusInternalServerError, tx.Error.Error())
+	}
+	if tx.RowsAffected == 0 {
+		return c.String(http.StatusNotFound, "User not found")
+	}
+
+	return c.String(http.StatusOK, "Account deleted")
 }
