@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"study4cash/DB/models"
 	"study4cash/routes"
 
 	"github.com/go-playground/validator/v10"
@@ -25,13 +26,31 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func main() {
 	godotenv.Load(".env")
 	db := configDB()
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalln(err.Error())
+	}
+	if err := db.AutoMigrate(&models.Attending{}); err != nil {
+		log.Fatalln(err.Error())
+	}
+	if err := db.AutoMigrate(&models.AverageWage{}); err != nil {
+		log.Fatalln(err.Error())
+	}
+	if err := db.AutoMigrate(&models.Graduating{}); err != nil {
+		log.Fatalln(err.Error())
+	}
 	fmt.Printf("db.Name(): %v\n", db.Name())
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
 	e.Use(middleware.RequestLogger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
+
 	// ROUTES
 	routes.RouteUsers("/user", e, db)
+	routes.RouteData("/data", e, db)
 
 	e.GET("/", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")

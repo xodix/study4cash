@@ -143,6 +143,309 @@ paths:
                 type: string
               example: "Malformed token"
 
+  /data/attending:
+    get:
+      summary: Get all attending data
+      operationId: attendingGet
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Attending students
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendingResponse"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/graduating:
+    get:
+      summary: Get all graduating data
+      operationId: graduatingGet
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Graduating students
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GraduatingResponse"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/averageWage:
+    get:
+      summary: Get all average wage data
+      operationId: averageWageGet
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Attending students
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AverageWageResponse"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/attending/XML:
+    put:
+      summary: Insert attending student data
+      operationId: attendingXML
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added attending students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added attending students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/graduating/XML:
+    put:
+      summary: Insert graduating student data
+      operationId: attendingXML
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added graduating students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added graduating students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/averageWage/XML:
+    put:
+      summary: Insert averageWage data
+      operationId: averageWageXML
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added average wages students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added average wages students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: XML Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
 components:
   securitySchemes:
     bearerAuth:
@@ -258,3 +561,93 @@ components:
           type: string
           format: date-time
           description: Users birthdate as a timestamp
+
+    AttendingResponse:
+      type: object
+      properties:
+        ID:
+          type: integer
+          format: uint
+          description: Unique ID of the user
+          example: 1
+        CreatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        UpdatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        DeletedAt:
+          type: string
+          description: When was record created
+          example: null
+          nullable: true
+        Year:
+          type: integer
+          format: uint
+          description: What year does the data describe
+        StudentsAttending:
+          type: number
+          format: uint
+          description: Average wage in region
+
+    GraduatingResponse:
+      type: object
+      properties:
+        ID:
+          type: integer
+          format: uint
+          description: Unique ID of the user
+          example: 1
+        CreatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        UpdatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        DeletedAt:
+          type: string
+          description: When was record created
+          example: null
+          nullable: true
+        Year:
+          type: integer
+          format: uint
+          description: What year does the data describe
+        StudentsGraduating:
+          type: number
+          format: uint
+          description: Average wage in region
+
+    AverageWageResponse:
+      type: object
+      properties:
+        ID:
+          type: integer
+          format: uint
+          description: Unique ID of the user
+          example: 1
+        CreatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        UpdatedAt:
+          type: string
+          description: When was record created
+          example: 2026-06-05T17:51:34.359+02:00
+        DeletedAt:
+          type: string
+          description: When was record created
+          example: null
+          nullable: true
+        Year:
+          type: integer
+          format: uint
+          description: What year does the data describe
+        AverageWage:
+          type: number
+          format: float
+          description: Average wage in region

@@ -1,5 +1,4 @@
 FROM golang:1.26 AS builder
-RUN go install github.com/bufbuild/buf/cmd/buf@latest
 
 WORKDIR /app
 COPY go.mod go.sum ./

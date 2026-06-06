@@ -33,12 +33,21 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: mariadb
       DB_NAME: ${DB_NAME}
+      TOKEN_SECRET: ${TOKEN_SECRET}
     networks:
       - server_network
     depends_on:
       mariadb:
         condition: service_healthy
- 
+  openAPIDocs:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "5050:8080"
+    environment:
+      SWAGGER_JSON: /foo/openapi.yaml
+    volumes:
+      - ./server/docs/openAPI.yml:/foo/openapi.yaml:ro
+
 volumes:
   mariadb_data:
 
