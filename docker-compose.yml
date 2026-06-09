@@ -45,6 +45,16 @@ services:
       SWAGGER_JSON: /foo/openapi.yaml
     volumes:
       - ./server/docs/openAPI.yml:/foo/openapi.yaml:ro
+  client:
+    build:
+      context: ./client/
+      dockerfile: Dockerfile
+    container_name: client_study4cash
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      API_URL: ${API_URL}
 
 volumes:
   mariadb_data:
