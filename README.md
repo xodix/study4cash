@@ -12,6 +12,7 @@ DB_NAME=study4cash
 DB_USER=study4cash_user
 DB_PASSWORD=DB_PASSWORD
 TOKEN_SECRET=TOKEN_SECRET_THAT_SHOULD_BE_AT_LEAST_32_CHARACTERS_LONG
+API_URL=EXTERNAL_ADDRESS_OF_THE_BACKEND_SERVER (for testing purposes, http://localhost:8080, or an IP address or domain name in production)
 ```
 
 Build the docker images used
