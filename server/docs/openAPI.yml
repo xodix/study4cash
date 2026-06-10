@@ -77,7 +77,7 @@ paths:
                   summary: Name below minimum length
                   value: "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag\nKey: 'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'required' tag\nKey: 'RegisterRequest.Name' Error:Field validation for 'Name' failed on the 'min' tag\nKey: 'RegisterRequest.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"
 
-  /user:
+  /user/:
     get:
       summary: Get the logged in user details
       operationId: userDetails
@@ -446,6 +446,173 @@ paths:
               schema:
                 type: string
 
+  /data/attending/JSON:
+    put:
+      summary: Insert attending student data
+      operationId: attendingJSON
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added attending students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added attending students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: JSON Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/graduating/JSON:
+    put:
+      summary: Insert graduating student data
+      operationId: attendingJSON
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added graduating students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added graduating students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: JSON Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /data/averageWage/JSON:
+    put:
+      summary: Insert averageWage data
+      operationId: averageWageJSON
+      tags:
+        - Data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Added average wages students to the database
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Added average wages students to the database"
+        "404":
+          description: No user with id that is inside the token
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                user_not_found:
+                  summary: User does not exist
+                  value: "User not found"
+        "400":
+          description: JSON Parsing error
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Malformed token"
+        "500":
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   securitySchemes:
     bearerAuth:

@@ -10,7 +10,6 @@ import (
 	"study4cash/routes"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
@@ -24,7 +23,6 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
-	godotenv.Load(".env")
 	db := configDB()
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		log.Fatalln(err.Error())
