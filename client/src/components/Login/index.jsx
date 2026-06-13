@@ -13,7 +13,7 @@ function Login({refreshFunction}) {
         const err= await login(userData)
         if(err===null) {
             refreshFunction()
-            window.location="/"
+            //window.location="/"
         }
         setErrors(err ?? {})
     }

@@ -15,21 +15,22 @@ const AllRegions=(initialData.success&&initialData.data.length>0 ? initialData.d
 function ChartPage({username,refreshFunction}){
 
     const [data,setData]=useState(initialData)
-    const [years,SetYears]=useState(AllYears)
-    const [regions,SetRegions]=useState(AllRegions)
-    const [chartType,setChartType]=useState('y')
-    const [year,SetYear]=useState(startY)
-    const [region,SetRegion]=useState(startV)
+    const [years,setYears]=useState(AllYears)
+    const [regions,setRegions]=useState(AllRegions)
+    const [chartType,setChartType]=useState('v')
+    const [year,setYear]=useState(startY)
+    const [region,setRegion]=useState(startV)
     const [visibleData,setVisibleData]=useState({type:"",data:[]})
 
     const refresh=async(e)=>{
         e.preventDefault()
         const res=await getAll()
+        console.log(res)
         setData(res)
-        setRegion(initialData.success&&initialData.data.length>0 ? initialData.data[0].voivodeship:"")
-        SetYear(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>Math.max(m,x.year),0):0)
-        setYears(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>{if(!m.includes(x.year)) m.push(x.year);return m;},[]) :[])
-        setRegions(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>{if(!m.includes(x.voivodeship)) m.push(x.voivodeship);return m;},[]) :[])
+        setRegion(res.success&&initialData.data.length>0 ? res.data[0].voivodeship:"")
+        setYear(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>Math.max(m,x.year),0):0)
+        setYears(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.year)) m.push(x.year);return m;},[]) :[])
+        setRegions(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.voivodeship)) m.push(x.voivodeship);return m;},[]) :[])
     }
     const prepareChart=(e)=>{
         if(chartType=='v'){
@@ -53,9 +54,9 @@ function ChartPage({username,refreshFunction}){
                 <option value='v'>All years in a specific voivodeship</option>
                 </select>
                 {chartType=='v'?
-                <>, voivodeship: <select value={region} onChange={(e)=>{SetRegion(e.target.value)}}>{regions.map(m=><option key={m} value={m}>{m}</option>)}</select></>
+                <>, voivodeship: <select value={region} onChange={(e)=>{setRegion(e.target.value)}}>{regions.map(m=><option key={m} value={m}>{m}</option>)}</select></>
                 :
-                <>, year: <select value={year} onChange={(e)=>{SetYear(e.target.value)}}>{years.map(m=><option key={m} value={m}>{m}</option>)}</select></>}
+                <>, year: <select value={year} onChange={(e)=>{setYear(e.target.value)}}>{years.map(m=><option key={m} value={m}>{m}</option>)}</select></>}
                 <button onClick={prepareChart}>Show</button></div>
                 {visibleData.type=='v'&&visibleData.data.length>0?
                 <div className='chart'><LineChart style={{width:'100%', aspectRatio: 1.618}} data={visibleData.data} responsive>
@@ -82,7 +83,16 @@ function ChartPage({username,refreshFunction}){
                     <Tooltip/>
                 </BarChart></div>:<div className="chart">No chart yet. Choose a chart type, then click the "show" button.</div>)}
                 </div>:
-            <div><h2>No data found!</h2><p>Load your own data in the <a href='/import'>Load Data tab</a> or <a class='btn-link' onClick={refresh}>refresh</a>.</p></div>
+            <div><h2>No data found!</h2>
+            <p className="highlighted">{data.missingText}</p>
+            <p>If this is because of an error, try logging in again or <a className="btn-link" onClick={refresh}>refreshing the page</a>.<br/>
+            This could also be because there is no data in the database for some categories. You can load your own data in the <a href='/import'>Load Data tab</a>.<br/>
+                The following errors occured while trying to load data:
+            </p>
+            <ul>{
+            data.errors && data.errors.length>0 ? data.errors.map((x,i)=><li key={i}>{x}</li>) : <li>No errors.</li>
+            }</ul>
+            </div>
         }
         </>
     )

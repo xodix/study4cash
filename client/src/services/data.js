@@ -5,41 +5,23 @@ import XMLBuilder from "fast-xml-builder"
 
 //glowny element root, w nim wiele <attending><Kod>0200000</Kod><Nazwa>DOLNOŚLĄSKIE</Nazwa><Y2002>523</Y2002></attending> lub jakakolwiek inna kategoria
 
-async function sendXml(file, category){
+async function sendFile(file, category, extension){
     var formData = new FormData();
     formData.append("file", file);
     const env=await loadConfig()
     try{
         const user=getUserFromCookie()
-        const res=await axios.put(env.API_URL+'/data/'+category+"/XML", formData, {headers: {'Content-Type': 'multipart/form-data','Authorization':"Bearer "+user.token}})
+        const res=await axios.put(env.API_URL+'/data/'+category+"/"+(category=="XML"?"XML":"JSON"), formData, {headers: {'Content-Type': 'multipart/form-data','Authorization':"Bearer "+user.token}})
         return {success: true, msg: "Data added successfully."}
     }catch(e){
         console.log("error",e)
         if(e.response){
             if(e.response.status==400||e.response.status==401||e.response.status==404||e.response.status==500)
-                return {success: false, msg: e.res}
+                return {success: false, msg: e.response.data.toString()}
             else return {success: false, msg: "Unknown error."}
         }else return {success: false, msg: "Unknown error."}
     }
     
-}
-async function sendJson(file,category){
-    let fileContents=await new Promise((resolve)=>{
-        try {
-            var reader= new FileReader()
-            reader.onload = (e) => resolve(reader.result);
-            reader.readAsText(file)
-        } catch (error) {}
-    })
-    if(fileContents==undefined) return {success: false, msg: "There was an error while reading the file."}
-    try {
-        const objs=JSON.parse(fileContents)
-        const xml=ExportObjectToXml(objs,category)
-        const xmlFile=new Blob([xml],{type:"text/xml"})
-        return sendXml(xmlFile,category)
-    } catch (error) {
-        return {success: false, msg: "There was an error while parsing the file. Are you sure the JSON is correct?"}
-    }
 }
 
 async function getOneCategory(category){
@@ -96,29 +78,43 @@ async function getXmlAsDataUrl(category){
 
 async function getAll(){
     const env=await loadConfig()
-    try{
-        const user=getUserFromCookie()
-        const config={headers: {'Authorization':"Bearer "+user.token}}
-        const {data: att}=await axios.get(env.API_URL+'/data/attending',config)
-        const {data: grad}=await axios.get(env.API_URL+'/data/graduating', config)
-        const {data: wage}=await axios.get(env.API_URL+'/data/averageWage', config)
-        let result=wage.map(w=>{
+    let missing=[], errors=[], data={}
+    const user=getUserFromCookie()
+    const config={headers: {'Authorization':"Bearer "+user.token}}
+    const categories=[{endpoint: "attending", name: "Attending students"},
+        {endpoint: "graduating", name: "Graduating students"},
+        {endpoint: "averageWage", name: "Average wages"}]
+        for(let i=0;i<categories.length;i++){
+            try{
+                const {data: d1}=await axios.get(env.API_URL+'/data/'+categories[i].endpoint,config)
+                if(Array.isArray(d1)&&d1.length>0) data[categories[i].endpoint]=d1
+                else {
+                    missing.push(categories[i].name.toLowerCase())
+                    errors.push(categories[i].name+": no data in the database")
+                }
+            }catch(e){
+                console.log("error", categories[i].name, e)
+                missing.push(categories[i].name.toLowerCase())
+                if(e.response&&(e.response.status==400||e.response.status==401||e.response.status==404||e.response.status==500)){  
+                    errors.push(categories[i].name+": "+e.response.data)
+                }else{
+                    errors.push(categories[i].name+": unknown error")
+                }
+            }
+        }
+    if(missing.length==0){
+        let result=data.averageWage.map(w=>{
             let res={voivodeship:w.Voivodeship, year:w.Year, wage: w.AverageWage}
-            let foundGrad=grad.find(a=>(a.Year==w.Year&&a.Voivodeship==w.Voivodeship)), foundAtt=att.find(a=>(a.Year==w.Year&&a.Voivodeship==w.Voivodeship))
+            let foundGrad=data.graduating.find(a=>(a.Year==w.Year&&a.Voivodeship==w.Voivodeship)), foundAtt=data.attending.find(a=>(a.Year==w.Year&&a.Voivodeship==w.Voivodeship))
             res.attending= foundAtt==undefined? undefined:foundAtt.StudentsAttending
             res.graduating= foundGrad==undefined? undefined:foundGrad.StudentsGraduating
             return res
-
         })
-        return {success: true, data: result.filter(w=>(w.attending!=undefined && w.graduating!=undefined))}
-    }catch(e){
-        console.log("error",e)
-        if(e.response){
-            if(e.response.status==400||e.response.status==401||e.response.status==404||e.response.status==500)
-                return {success: false, msg: e.res}
-            else return {success: false, msg: "Unknown error."}
-        }else return {success: false, msg: "Unknown error."}
+        result=result.filter(w=>(w.attending!=undefined && w.graduating!=undefined))
+        result.sort((x,y)=>(x.year==y.year?(x.voivodeship<y.voivodeship?-1:1):(x.year<y.year?-1:1)))
+        return {success: true, data: result}
     }
+    else return {success: false, errors, missingText: "Missing categories: "+missing.join(", ")}
 }
 
-export {sendXml, sendJson, getAll, getJsonAsDataUrl, getXmlAsDataUrl}
+export {sendFile, getAll, getJsonAsDataUrl, getXmlAsDataUrl}
