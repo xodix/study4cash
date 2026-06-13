@@ -11,7 +11,6 @@ async function setTokenCookie(token, username){
             const {data: d} = await axios({url:env.API_URL+"/user/",method:"get",headers:{'Authorization':"Bearer "+token}}) //Wymienic na env przed wrzuceniem do kontenera
             username=d.name+" "+d.surname
         }catch(e){
-            console.log(e.response)
             username="Unknown"
         }
     }
@@ -80,18 +79,14 @@ async function login(data){
 }
 
 async function deleteCurrent(){
-    console.log("entered")
     const user=getUserFromCookie();
-    console.log(user)
     if(user===undefined) return {success: false, msg: "You are not currently logged in."}
     try{
         const env=await loadConfig()
         const d = await axios({url:env.API_URL+"/user/",method:"delete",headers:{'Authorization':"Bearer "+user.token}}) //Wymienic na env przed wrzuceniem do kontenera
-        console.log("d",d)
         logout()
         return {success: d.status==200, msg: d.data}
     }catch(e){
-        console.log("e",e)
         if(e.response&&e.response.status>400&&e.response.status<=404) return {success: false, msg: e.response.data.message}
     }
 }
