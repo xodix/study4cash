@@ -16,7 +16,6 @@ function Nav({username,refreshFunction}){
         if(window.confirm("Are you sure you want to delete your account?"))
         {
             const result=await deleteCurrent()
-            console.log("result:",result)
             if(result.success) {
                 refreshFunction();
                 window.location="/"

@@ -25,7 +25,6 @@ function ChartPage({username,refreshFunction}){
     const refresh=async(e)=>{
         e.preventDefault()
         const res=await getAll()
-        console.log(res)
         setData(res)
         setRegion(res.success&&initialData.data.length>0 ? res.data[0].voivodeship:"")
         setYear(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>Math.max(m,x.year),0):0)
@@ -40,7 +39,6 @@ function ChartPage({username,refreshFunction}){
             let vd=data.data.filter(w=>w.year==year)
             setVisibleData({type:'y',data:vd})
         }
-        console.log(visibleData)
     }
     
     return(
