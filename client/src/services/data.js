@@ -14,7 +14,6 @@ async function sendFile(file, category, extension){
         const res=await axios.put(env.API_URL+'/data/'+category+"/"+(category=="XML"?"XML":"JSON"), formData, {headers: {'Content-Type': 'multipart/form-data','Authorization':"Bearer "+user.token}})
         return {success: true, msg: "Data added successfully."}
     }catch(e){
-        console.log("error",e)
         if(e.response){
             if(e.response.status==400||e.response.status==401||e.response.status==404||e.response.status==500)
                 return {success: false, msg: e.response.data.toString()}
@@ -93,7 +92,6 @@ async function getAll(){
                     errors.push(categories[i].name+": no data in the database")
                 }
             }catch(e){
-                console.log("error", categories[i].name, e)
                 missing.push(categories[i].name.toLowerCase())
                 if(e.response&&(e.response.status==400||e.response.status==401||e.response.status==404||e.response.status==500)){  
                     errors.push(categories[i].name+": "+e.response.data)
