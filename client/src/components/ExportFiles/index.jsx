@@ -17,7 +17,7 @@ function ExportFiles(){
             setOk(res.success)
             if(ok){
                 setError("File obtained, download it from the top of the list below.")
-                setFiles([...files, {href:res.href, name: category+'.json', timestamp: Date.now()}])
+                setFiles([{href:res.href, name: category+'.json', timestamp: Date.now()}, ...files])
             }
             else setError(res.msg)
         }

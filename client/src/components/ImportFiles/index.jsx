@@ -1,4 +1,4 @@
-import {sendXml, sendJson} from "../../services/data.js"
+import {sendFile} from "../../services/data.js"
 import { useState } from 'react'
 
 function ImportFiles(){
@@ -16,6 +16,13 @@ function ImportFiles(){
         setFile()
     }
 
+    const categoryChanged = (e)=>{
+        e.preventDefault()
+        setCategory(e.target.value)
+        document.getElementById("file").value=null
+        setFile()
+    }
+
     const sendClick = async (e)=>{
         e.preventDefault()
         if(file===undefined){
@@ -26,14 +33,14 @@ function ImportFiles(){
         if(format.includes("xml")){
             setOk(true)
             setError("Sending...")
-            let res=await sendXml(file,category)
+            let res=await sendFile(file,category,"XML")
             setOk(res.success)
             setError(res.msg)
         }
         else if(format.includes("json")){
             setOk(true)
             setError("Sending...")
-            let res=await sendJson(file,category)
+            let res=await sendFile(file,category, "JSON")
             setOk(res.success)
             setError(res.msg)
         }
@@ -47,7 +54,7 @@ function ImportFiles(){
         <div>
             <h2>Import your data</h2>
             <div className="row"><label className='form-label offset-1 col-2' htmlFor='cat'>Type of data:</label>
-            <div className='col-8'><select id='cat' className='form-input' height="3" value={category} onChange={(e)=>setCategory(e.target.value)}>
+            <div className='col-8'><select id='cat' className='form-input' height="3" value={category} onChange={categoryChanged}>
             <option value="attending">Attending students</option>
             <option value="graduating">Graduating students</option>
             <option value="averageWage">Average wage</option></select></div></div>
