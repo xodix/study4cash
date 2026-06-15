@@ -11,7 +11,7 @@ async function sendFile(file, category, extension){
     const env=await loadConfig()
     try{
         const user=getUserFromCookie()
-        const res=await axios.put(env.API_URL+'/data/'+category+"/"+(category=="XML"?"XML":"JSON"), formData, {headers: {'Content-Type': 'multipart/form-data','Authorization':"Bearer "+user.token}})
+        const res=await axios.put(env.API_URL+'/data/'+category+"/"+(extension=="XML"?"XML":"JSON"), formData, {headers: {'Content-Type': 'multipart/form-data','Authorization':"Bearer "+user.token}})
         return {success: true, msg: "Data added successfully."}
     }catch(e){
         if(e.response){
@@ -79,6 +79,7 @@ async function getAll(){
     const env=await loadConfig()
     let missing=[], errors=[], data={}
     const user=getUserFromCookie()
+    if(user==undefined) return {success: false, errors:["You are not logged in."], missingText: "Missing categories: attending students, graduating students, average wages"}
     const config={headers: {'Authorization':"Bearer "+user.token}}
     const categories=[{endpoint: "attending", name: "Attending students"},
         {endpoint: "graduating", name: "Graduating students"},
