@@ -6,30 +6,37 @@ import {LineChart, Line, XAxis, YAxis, Legend, Tooltip, BarChart, Bar, Cartesian
 import { RechartsDevtools } from '@recharts/devtools';
 import "./chart.css"
 
-const initialData=await getAll()
-const startV=(initialData.success&&initialData.data.length>0 ? initialData.data[0].voivodeship:"")
-const startY=(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>Math.max(m,x.year),0):0)
-const AllYears=(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>{if(!m.includes(x.year)) m.push(x.year);return m;},[]) :[])
-const AllRegions=(initialData.success&&initialData.data.length>0 ? initialData.data.reduce((m,x)=>{if(!m.includes(x.voivodeship)) m.push(x.voivodeship);return m;},[]) :[])
-
 function ChartPage({username,refreshFunction}){
 
-    const [data,setData]=useState(initialData)
-    const [years,setYears]=useState(AllYears)
-    const [regions,setRegions]=useState(AllRegions)
+    const [data,setData]=useState({success:false, missing:"Missing categories: attending students, graduating students, average wages", errors:["No load attempt was made yet."]})
+    const [years,setYears]=useState([])
+    const [regions,setRegions]=useState([])
     const [chartType,setChartType]=useState('v')
-    const [year,setYear]=useState(startY)
-    const [region,setRegion]=useState(startV)
+    const [year,setYear]=useState(0)
+    const [region,setRegion]=useState(0)
     const [visibleData,setVisibleData]=useState({type:"",data:[]})
+    const [loaded, setLoaded] = useState(false)
+
+    const setAllData=(res)=>{
+        setData(res)
+        setRegion(res.success&&res.data.length>0 ? res.data[0].voivodeship:"")
+        setYear(res.success&&res.data.length>0 ? res.data.reduce((m,x)=>Math.max(m,x.year),0):0)
+        setYears(res.success&&res.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.year)) m.push(x.year);return m;},[]) :[])
+        setRegions(res.success&&res.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.voivodeship)) m.push(x.voivodeship);return m;},[]) :[])
+    }
+
+    useEffect(()=>{
+        if(!loaded){
+            setLoaded(true)
+            getAll().then(res=>setAllData(res))
+        }
+    })
 
     const refresh=async(e)=>{
         e.preventDefault()
         const res=await getAll()
-        setData(res)
-        setRegion(res.success&&initialData.data.length>0 ? res.data[0].voivodeship:"")
-        setYear(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>Math.max(m,x.year),0):0)
-        setYears(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.year)) m.push(x.year);return m;},[]) :[])
-        setRegions(res.success&&initialData.data.length>0 ? res.data.reduce((m,x)=>{if(!m.includes(x.voivodeship)) m.push(x.voivodeship);return m;},[]) :[])
+        setAllData(res)
+        
     }
     const prepareChart=(e)=>{
         if(chartType=='v'){
