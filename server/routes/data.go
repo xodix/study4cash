@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -167,6 +168,8 @@ func SetAttendingXML(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
 		return c.String(500, err.Error())
@@ -238,6 +241,8 @@ func SetAverageWageXML(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 
 	return c.String(200, "Added average wages students to the database")
@@ -306,6 +311,8 @@ func SetGraduatingXML(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 
 	return c.String(200, "Added graduating students to the database")
@@ -375,6 +382,8 @@ func SetAttendingJSON(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
 		return c.String(500, err.Error())
@@ -446,6 +455,8 @@ func SetAverageWageJSON(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 
 	return c.String(200, "Added average wages students to the database")
@@ -514,6 +525,8 @@ func SetGraduatingJSON(c *echo.Context, db *gorm.DB) error {
 			return err
 		}
 		return nil
+	}, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
 	})
 
 	return c.String(200, "Added graduating students to the database")
